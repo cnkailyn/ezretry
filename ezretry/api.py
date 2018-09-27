@@ -1,4 +1,4 @@
-from core import RetryParameters, __retry_internal, check_params
+from ezretry.core import RetryParameters, __retry_internal, check_params
 import logging
 import functools
 
