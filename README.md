@@ -6,22 +6,29 @@ pip install ezretry
 
 ## usage
 ```
-from ezretry.core import RetryParameters, retry
+from core import retry, RetryParameters
 
 
-PROXY = {}
+test_index = 100
 
-def do_while_exception():
-    global PROXY
-    PROXY = {
-        "http": "http://axbix.com"
-    }
 
-except_params = [
-    RetryParameters(exceptions=(Exception,), do=do_while_exception, tries=10, delay=1),
+def change_index():
+    global test_index
+    test_index -= 1
+
+
+exception_params = [
+    RetryParameters(exceptions=(IndexError,), do=change_index, tries=3, delay=0.1, max_delay=5, back_off=1, jitter=1),
 ]
-@retry()
-def test_func(except_params):
-    raise Exception("test")
+
+
+@retry(exception_params)
+def test_func():
+    a = [1, 2, 3]
+    global test_index
+    return a[test_index]
+
+
+test_func()
    
 ```
