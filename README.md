@@ -35,7 +35,7 @@ def refresh_proxy():
     print(Proxy)
 
 
-@ezretry.decorator(retry_params_list=[
+@ezretry.retry(retry_params_list=[
     ezretry.RetryParamItem(exceptions=(ConnectionError, InValidProxy), do=refresh_proxy, tries=-1),
     ezretry.RetryParamItem(exceptions=(Exception,), do=refresh_proxy, tries=2)
 ])
