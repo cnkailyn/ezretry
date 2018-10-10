@@ -3,3 +3,7 @@ test.py
 *.pyc
 .pypirc
 test.py
+dist/
+build/
+ezretry.egg-info/
+myself.txt
