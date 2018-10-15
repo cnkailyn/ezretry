@@ -35,9 +35,9 @@ def refresh_proxy():
     print(Proxy)
 
 
-@ezretry.retry(retry_params_list=[
-    ezretry.RetryParamItem(exceptions=(ConnectionError, InValidProxy), do=refresh_proxy, tries=-1),
-    ezretry.RetryParamItem(exceptions=(Exception,), do=refresh_proxy, tries=2)
+@ezretry.retry(retry_groups=[
+    ezretry.RetryGroup(es=(ConnectionError, InValidProxy), do=refresh_proxy, fail_return="我尽力了", tries=2),
+    ezretry.RetryGroup(es=(Exception,), do=refresh_proxy, fail_return="我尽力了", tries=2)
 ])
 def get_lago_data(key, page=1):
     global Proxy
@@ -46,13 +46,33 @@ def get_lago_data(key, page=1):
         "kd": key
     }
     data = requests.post("https://www.lagou.com/jobs/positionAjax.json?city=成都&needAddtionalResult=false",
-                         data=params, proxies=Proxy).json()
+                         data=params, proxies=Proxy, timeout=5).json()
     if "操作太频繁" in data['msg']:
         raise InValidProxy()
     result = data['content']['positionResult']['result']
-    print(result)
+    return result
 
 
-for i in range(10):
-    get_lago_data("Python", i)
+def get_lago_data_test(key, page=1):
+    global Proxy
+    params = {
+        "pn": page,
+        "kd": key
+    }
+    data = requests.post("https://www.lagou.com/jobs/positionAjax.json?city=成都&needAddtionalResult=false",
+                         data=params, proxies=Proxy, timeout=5).json()
+    if "操作太频繁" in data['msg']:
+        raise InValidProxy()
+    result = data['content']['positionResult']['result']
+    return result
+
+
+for i in range(1):
+    print(get_lago_data("Python", i))
+
+for i in range(1):
+    print(ezretry.retry_call(get_lago_data_test, f_args=("Python", i), retry_groups=[
+        ezretry.RetryGroup(es=(ConnectionError, InValidProxy), do=refresh_proxy, fail_return="我尽力了", tries=2),
+        ezretry.RetryGroup(es=(Exception,), do=refresh_proxy, fail_return="我尽力了", tries=2)
+        ]))
 ```
